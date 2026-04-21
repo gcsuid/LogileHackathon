@@ -1,0 +1,392 @@
+{
+  "records": [
+    {
+      "timestamp": "2026-04-01 00:00:00",
+      "level": "INFO",
+      "service": "AuthService",
+      "message": "User login request received",
+      "fields": {
+        "userId": "U101",
+        "ip": "10.0.0.1"
+      },
+      "raw": "2026-04-01 00:00:00 INFO [AuthService] User login request received userId=U101 ip=10.0.0.1"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:01",
+      "level": "WARN",
+      "service": "DBService",
+      "message": "Login failed",
+      "fields": {
+        "userId": "U176",
+        "reason": "INVALID_PASSWORD"
+      },
+      "raw": "2026-04-01 00:00:01 WARN [DBService] Login failed userId=U176 reason=INVALID_PASSWORD"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:02",
+      "level": "INFO",
+      "service": "APIService",
+      "message": "Request completed",
+      "fields": {
+        "endpoint": "/login",
+        "method": "POST",
+        "status": 200,
+        "responseTimeMs": 180
+      },
+      "raw": "2026-04-01 00:00:02 INFO [APIService] Request completed endpoint=/login method=POST status=200 responseTimeMs=180"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:04",
+      "level": "INFO",
+      "service": "DBService",
+      "message": "Query executed",
+      "fields": {
+        "query": "SELECT_USERS",
+        "queryTimeMs": 84,
+        "rows": 1
+      },
+      "raw": "2026-04-01 00:00:04 INFO [DBService] Query executed query=SELECT_USERS queryTimeMs=84 rows=1"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:06",
+      "level": "WARN",
+      "service": "DBService",
+      "message": "Login failed",
+      "fields": {
+        "userId": "U176",
+        "reason": "INVALID_PASSWORD"
+      },
+      "raw": "2026-04-01 00:00:06 WARN [DBService] Login failed userId=U176 reason=INVALID_PASSWORD"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:07",
+      "level": "ERROR",
+      "service": "PaymentService",
+      "message": "Payment exception",
+      "fields": {
+        "orderId": "O502",
+        "exception": "TimeoutError",
+        "responseTimeMs": 1350
+      },
+      "raw": "2026-04-01 00:00:07 ERROR [PaymentService] Payment exception orderId=O502 exception=TimeoutError responseTimeMs=1350"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:09",
+      "level": "INFO",
+      "service": "APIService",
+      "message": "Request completed",
+      "fields": {
+        "endpoint": "/orders",
+        "method": "GET",
+        "status": 200,
+        "responseTimeMs": 1240
+      },
+      "raw": "2026-04-01 00:00:09 INFO [APIService] Request completed endpoint=/orders method=GET status=200 responseTimeMs=1240"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:11",
+      "level": "WARN",
+      "service": "AuthService",
+      "message": "Login failed",
+      "fields": {
+        "userId": "U991",
+        "reason": "INVALID_PASSWORD"
+      },
+      "raw": "2026-04-01 00:00:11 WARN [AuthService] Login failed userId=U991 reason=INVALID_PASSWORD"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:12",
+      "level": "INFO",
+      "service": "DBService",
+      "message": "Query executed",
+      "fields": {
+        "query": "UPDATE_CART",
+        "queryTimeMs": 620,
+        "rows": 1
+      },
+      "raw": "2026-04-01 00:00:12 INFO [DBService] Query executed query=UPDATE_CART queryTimeMs=620 rows=1"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:15",
+      "level": "ERROR",
+      "service": "InventoryService",
+      "message": "Stock sync exception",
+      "fields": {
+        "itemId": "I443",
+        "exception": "ConnectionResetError"
+      },
+      "raw": "2026-04-01 00:00:15 ERROR [InventoryService] Stock sync exception itemId=I443 exception=ConnectionResetError"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:17",
+      "level": "INFO",
+      "service": "APIService",
+      "message": "Request completed",
+      "fields": {
+        "endpoint": "/inventory",
+        "method": "GET",
+        "status": 503,
+        "responseTimeMs": 980
+      },
+      "raw": "2026-04-01 00:00:17 INFO [APIService] Request completed endpoint=/inventory method=GET status=503 responseTimeMs=980"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:19",
+      "level": "WARN",
+      "service": "APIService",
+      "message": "Request throttled",
+      "fields": {
+        "endpoint": "/checkout",
+        "status": 429,
+        "responseTimeMs": 1010
+      },
+      "raw": "2026-04-01 00:00:19 WARN [APIService] Request throttled endpoint=/checkout status=429 responseTimeMs=1010"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:20",
+      "level": "INFO",
+      "service": "CacheService",
+      "message": "Cache miss",
+      "fields": {
+        "key": "product:I443"
+      },
+      "raw": "2026-04-01 00:00:20 INFO [CacheService] Cache miss key=product:I443"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:22",
+      "level": "INFO",
+      "service": "DBService",
+      "message": "Query executed",
+      "fields": {
+        "query": "SELECT_STOCK",
+        "queryTimeMs": 540,
+        "rows": 20
+      },
+      "raw": "2026-04-01 00:00:22 INFO [DBService] Query executed query=SELECT_STOCK queryTimeMs=540 rows=20"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:24",
+      "level": "INFO",
+      "service": "PaymentService",
+      "message": "Payment processed",
+      "fields": {
+        "orderId": "O510",
+        "amount": 199.99,
+        "currency": "USD",
+        "responseTimeMs": 410
+      },
+      "raw": "2026-04-01 00:00:24 INFO [PaymentService] Payment processed orderId=O510 amount=199.99 currency=USD responseTimeMs=410"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:27",
+      "level": "WARN",
+      "service": "PaymentService",
+      "message": "Retry scheduled",
+      "fields": {
+        "orderId": "O502",
+        "retryInSec": 30
+      },
+      "raw": "2026-04-01 00:00:27 WARN [PaymentService] Retry scheduled orderId=O502 retryInSec=30"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:29",
+      "level": "INFO",
+      "service": "APIService",
+      "message": "Request completed",
+      "fields": {
+        "endpoint": "/health",
+        "method": "GET",
+        "status": 200,
+        "responseTimeMs": 95
+      },
+      "raw": "2026-04-01 00:00:29 INFO [APIService] Request completed endpoint=/health method=GET status=200 responseTimeMs=95"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:31",
+      "level": "ERROR",
+      "service": "DBService",
+      "message": "Query exception",
+      "fields": {
+        "query": "SELECT_LEDGER",
+        "exception": "DeadlockError",
+        "queryTimeMs": 710
+      },
+      "raw": "2026-04-01 00:00:31 ERROR [DBService] Query exception query=SELECT_LEDGER exception=DeadlockError queryTimeMs=710"
+    },
+    {
+      "timestamp": "2026-04-01 00:00:35",
+      "level": "INFO",
+      "service": "AuthService",
+      "message": "User logout completed",
+      "fields": {
+        "userId": "U101",
+        "sessionId": "S-1001"
+      },
+      "raw": "2026-04-01 00:00:35 INFO [AuthService] User logout completed userId=U101 sessionId=S-1001"
+    }
+  ],
+  "failed_lines": [
+    "this line does not match the format"
+  ],
+  "metrics": {
+    "total_records": 19,
+    "failed_to_parse": 1,
+    "levels": {
+      "INFO": 11,
+      "WARN": 5,
+      "ERROR": 3
+    },
+    "services": {
+      "AuthService": 3,
+      "DBService": 6,
+      "APIService": 5,
+      "PaymentService": 3,
+      "InventoryService": 1,
+      "CacheService": 1
+    },
+    "top_messages": [
+      {
+        "message": "Request completed",
+        "count": 4
+      },
+      {
+        "message": "Login failed",
+        "count": 3
+      },
+      {
+        "message": "Query executed",
+        "count": 3
+      },
+      {
+        "message": "User login request received",
+        "count": 1
+      },
+      {
+        "message": "Payment exception",
+        "count": 1
+      }
+    ],
+    "time_window_seconds": 35,
+    "response_time_ms": {
+      "count": 7,
+      "avg": 752.14,
+      "min": 95.0,
+      "max": 1350.0,
+      "p95": 1350.0
+    },
+    "db_query_time_ms": {
+      "count": 4,
+      "avg": 488.5,
+      "min": 84.0,
+      "max": 710.0,
+      "p95": 710.0
+    },
+    "login_failures": {
+      "count": 3,
+      "users": {
+        "U176": 2,
+        "U991": 1
+      }
+    },
+    "failure_reasons": [
+      {
+        "reason": "INVALID_PASSWORD",
+        "count": 3
+      }
+    ],
+    "exceptions": {
+      "count": 3,
+      "by_service": {
+        "PaymentService": 1,
+        "InventoryService": 1,
+        "DBService": 1
+      }
+    },
+    "slow_requests": {
+      "count": 3,
+      "threshold_ms": 1000,
+      "by_service": {
+        "APIService": 2,
+        "PaymentService": 1
+      }
+    },
+    "high_db_latency": {
+      "count": 3,
+      "threshold_ms": 500,
+      "by_service": {
+        "DBService": 3
+      }
+    },
+    "issue_signals": [
+      {
+        "severity": "medium",
+        "title": "Some log lines could not be parsed",
+        "detail": "1 lines do not match the expected pattern."
+      },
+      {
+        "severity": "high",
+        "title": "Application errors detected",
+        "detail": "3 ERROR log(s) observed across 3 service(s)."
+      },
+      {
+        "severity": "high",
+        "title": "Repeated login failures",
+        "detail": "3 failed login attempts detected; highest volume user is U176 with 2 failures."
+      },
+      {
+        "severity": "medium",
+        "title": "Slow request latency",
+        "detail": "3 request(s) exceeded 1000 ms; APIService accounts for 2."
+      },
+      {
+        "severity": "medium",
+        "title": "Database latency is elevated",
+        "detail": "3 query event(s) exceeded 500 ms."
+      },
+      {
+        "severity": "low",
+        "title": "One service dominates the logs",
+        "detail": "DBService produced 6 of 19 parsed events."
+      }
+    ],
+    "dashboard": {
+      "total_logs": 19,
+      "error_rate": 15.79,
+      "top_failing_components": [
+        {
+          "service": "PaymentService",
+          "errors": 1
+        },
+        {
+          "service": "InventoryService",
+          "errors": 1
+        },
+        {
+          "service": "DBService",
+          "errors": 1
+        }
+      ],
+      "common_failure_reasons": [
+        {
+          "reason": "INVALID_PASSWORD",
+          "count": 3
+        }
+      ],
+      "anomalies": [
+        "Spike in errors at 00:00",
+        "Suspicious activity detected for U176",
+        "1 malformed log line(s) detected"
+      ],
+      "spike_minute": {
+        "time": "00:00",
+        "error_count": 3,
+        "label": "Spike in errors at 00:00"
+      },
+      "suspicious_activity": {
+        "user_id": "U176",
+        "attempts": 2,
+        "label": "Suspicious activity detected for U176"
+      }
+    }
+  }
+}

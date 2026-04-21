@@ -1,0 +1,20 @@
+2026-04-01 00:00:00 INFO [AuthService] User login request received userId=U101 ip=10.0.0.1
+2026-04-01 00:00:01 WARN [DBService] Login failed userId=U176 reason=INVALID_PASSWORD
+2026-04-01 00:00:02 INFO [APIService] Request completed endpoint=/login method=POST status=200 responseTimeMs=180
+2026-04-01 00:00:04 INFO [DBService] Query executed query=SELECT_USERS queryTimeMs=84 rows=1
+2026-04-01 00:00:06 WARN [DBService] Login failed userId=U176 reason=INVALID_PASSWORD
+2026-04-01 00:00:07 ERROR [PaymentService] Payment exception orderId=O502 exception=TimeoutError responseTimeMs=1350
+2026-04-01 00:00:09 INFO [APIService] Request completed endpoint=/orders method=GET status=200 responseTimeMs=1240
+2026-04-01 00:00:11 WARN [AuthService] Login failed userId=U991 reason=INVALID_PASSWORD
+2026-04-01 00:00:12 INFO [DBService] Query executed query=UPDATE_CART queryTimeMs=620 rows=1
+2026-04-01 00:00:15 ERROR [InventoryService] Stock sync exception itemId=I443 exception=ConnectionResetError
+2026-04-01 00:00:17 INFO [APIService] Request completed endpoint=/inventory method=GET status=503 responseTimeMs=980
+2026-04-01 00:00:19 WARN [APIService] Request throttled endpoint=/checkout status=429 responseTimeMs=1010
+2026-04-01 00:00:20 INFO [CacheService] Cache miss key=product:I443
+2026-04-01 00:00:22 INFO [DBService] Query executed query=SELECT_STOCK queryTimeMs=540 rows=20
+2026-04-01 00:00:24 INFO [PaymentService] Payment processed orderId=O510 amount=199.99 currency=USD responseTimeMs=410
+2026-04-01 00:00:27 WARN [PaymentService] Retry scheduled orderId=O502 retryInSec=30
+2026-04-01 00:00:29 INFO [APIService] Request completed endpoint=/health method=GET status=200 responseTimeMs=95
+2026-04-01 00:00:31 ERROR [DBService] Query exception query=SELECT_LEDGER exception=DeadlockError queryTimeMs=710
+this line does not match the format
+2026-04-01 00:00:35 INFO [AuthService] User logout completed userId=U101 sessionId=S-1001
