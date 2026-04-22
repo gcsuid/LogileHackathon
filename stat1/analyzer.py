@@ -371,6 +371,178 @@ def build_dashboard_summary(
     }
 
 
+def compare_metrics(baseline: dict[str, Any], candidate: dict[str, Any]) -> dict[str, Any]:
+    baseline_errors = baseline["levels"].get("ERROR", 0)
+    candidate_errors = candidate["levels"].get("ERROR", 0)
+    baseline_error_rate = baseline["dashboard"]["error_rate"]
+    candidate_error_rate = candidate["dashboard"]["error_rate"]
+
+    latency_delta = compare_numeric_summary(
+        baseline.get("response_time_ms"),
+        candidate.get("response_time_ms"),
+        "p95",
+    )
+    db_latency_delta = compare_numeric_summary(
+        baseline.get("db_query_time_ms"),
+        candidate.get("db_query_time_ms"),
+        "p95",
+    )
+
+    baseline_failure_reasons = {
+        item["reason"]: item["count"] for item in baseline.get("failure_reasons", [])
+    }
+    candidate_failure_reasons = {
+        item["reason"]: item["count"] for item in candidate.get("failure_reasons", [])
+    }
+
+    baseline_service_errors = {
+        item["service"]: item["errors"]
+        for item in baseline["dashboard"].get("top_failing_components", [])
+    }
+    candidate_service_errors = {
+        item["service"]: item["errors"]
+        for item in candidate["dashboard"].get("top_failing_components", [])
+    }
+
+    worsened_services = []
+    for service in sorted(set(baseline_service_errors) | set(candidate_service_errors)):
+        delta = candidate_service_errors.get(service, 0) - baseline_service_errors.get(service, 0)
+        if delta > 0:
+            worsened_services.append(
+                {
+                    "service": service,
+                    "baseline_errors": baseline_service_errors.get(service, 0),
+                    "candidate_errors": candidate_service_errors.get(service, 0),
+                    "delta": delta,
+                }
+            )
+
+    new_failure_reasons = [
+        {
+            "reason": reason,
+            "count": candidate_failure_reasons[reason],
+        }
+        for reason in sorted(candidate_failure_reasons)
+        if reason not in baseline_failure_reasons
+    ]
+    removed_failure_reasons = [
+        {
+            "reason": reason,
+            "count": baseline_failure_reasons[reason],
+        }
+        for reason in sorted(baseline_failure_reasons)
+        if reason not in candidate_failure_reasons
+    ]
+
+    added_services = sorted(set(candidate["services"]) - set(baseline["services"]))
+    removed_services = sorted(set(baseline["services"]) - set(candidate["services"]))
+
+    summary = build_comparison_summary(
+        baseline=baseline,
+        candidate=candidate,
+        worsened_services=worsened_services,
+        new_failure_reasons=new_failure_reasons,
+        latency_delta=latency_delta,
+        db_latency_delta=db_latency_delta,
+    )
+
+    return {
+        "baseline": {
+            "total_logs": baseline["dashboard"]["total_logs"],
+            "error_rate": baseline_error_rate,
+            "error_count": baseline_errors,
+            "slow_requests": baseline["slow_requests"]["count"],
+            "db_latency_events": baseline["high_db_latency"]["count"],
+        },
+        "candidate": {
+            "total_logs": candidate["dashboard"]["total_logs"],
+            "error_rate": candidate_error_rate,
+            "error_count": candidate_errors,
+            "slow_requests": candidate["slow_requests"]["count"],
+            "db_latency_events": candidate["high_db_latency"]["count"],
+        },
+        "deltas": {
+            "error_count": candidate_errors - baseline_errors,
+            "error_rate": round(candidate_error_rate - baseline_error_rate, 2),
+            "slow_requests": candidate["slow_requests"]["count"] - baseline["slow_requests"]["count"],
+            "db_latency_events": candidate["high_db_latency"]["count"] - baseline["high_db_latency"]["count"],
+            "response_time_p95_ms": latency_delta,
+            "db_query_p95_ms": db_latency_delta,
+        },
+        "worsened_services": worsened_services,
+        "new_failure_reasons": new_failure_reasons,
+        "removed_failure_reasons": removed_failure_reasons,
+        "added_services": added_services,
+        "removed_services": removed_services,
+        "summary": summary,
+    }
+
+
+def compare_numeric_summary(
+    baseline: dict[str, Any] | None,
+    candidate: dict[str, Any] | None,
+    field: str,
+) -> dict[str, Any] | None:
+    if not baseline or not candidate:
+        return None
+    if field not in baseline or field not in candidate:
+        return None
+    baseline_value = baseline[field]
+    candidate_value = candidate[field]
+    return {
+        "baseline": baseline_value,
+        "candidate": candidate_value,
+        "delta": round(candidate_value - baseline_value, 2),
+    }
+
+
+def build_comparison_summary(
+    baseline: dict[str, Any],
+    candidate: dict[str, Any],
+    worsened_services: list[dict[str, Any]],
+    new_failure_reasons: list[dict[str, Any]],
+    latency_delta: dict[str, Any] | None,
+    db_latency_delta: dict[str, Any] | None,
+) -> list[str]:
+    lines: list[str] = []
+    error_rate_delta = round(
+        candidate["dashboard"]["error_rate"] - baseline["dashboard"]["error_rate"],
+        2,
+    )
+    if error_rate_delta > 0:
+        lines.append(
+            f"Error rate increased by {error_rate_delta:.2f} percentage points."
+        )
+    elif error_rate_delta < 0:
+        lines.append(
+            f"Error rate improved by {abs(error_rate_delta):.2f} percentage points."
+        )
+    else:
+        lines.append("Error rate is unchanged between both files.")
+
+    if worsened_services:
+        worst_service = max(worsened_services, key=lambda item: item["delta"])
+        lines.append(
+            f"{worst_service['service']} shows the sharpest regression with +{worst_service['delta']} errors."
+        )
+
+    if new_failure_reasons:
+        lines.append(
+            f"New failure reason detected: {new_failure_reasons[0]['reason']}."
+        )
+
+    if latency_delta and latency_delta["delta"] > 0:
+        lines.append(
+            f"API response p95 worsened by {latency_delta['delta']} ms."
+        )
+    if db_latency_delta and db_latency_delta["delta"] > 0:
+        lines.append(
+            f"DB query p95 worsened by {db_latency_delta['delta']} ms."
+        )
+
+    return lines
+
+
 def render_report(metrics: dict[str, Any]) -> str:
     lines = [
         "Log Analysis Report",

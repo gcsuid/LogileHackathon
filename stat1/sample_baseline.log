@@ -1,0 +1,11 @@
+2026-03-31 23:59:58 INFO [AuthService] User login request received userId=U101 ip=10.0.0.1
+2026-03-31 23:59:59 INFO [APIService] Request completed endpoint=/login method=POST status=200 responseTimeMs=120
+2026-04-01 00:00:01 WARN [DBService] Login failed userId=U176 reason=INVALID_PASSWORD
+2026-04-01 00:00:03 INFO [DBService] Query executed query=SELECT_USERS queryTimeMs=72 rows=1
+2026-04-01 00:00:06 INFO [APIService] Request completed endpoint=/orders method=GET status=200 responseTimeMs=310
+2026-04-01 00:00:09 INFO [PaymentService] Payment processed orderId=O501 amount=149.99 currency=USD responseTimeMs=280
+2026-04-01 00:00:12 WARN [AuthService] Login failed userId=U991 reason=INVALID_PASSWORD
+2026-04-01 00:00:15 INFO [DBService] Query executed query=SELECT_STOCK queryTimeMs=220 rows=20
+2026-04-01 00:00:18 INFO [APIService] Request completed endpoint=/inventory method=GET status=200 responseTimeMs=360
+2026-04-01 00:00:21 INFO [CacheService] Cache miss key=product:I443
+2026-04-01 00:00:24 INFO [APIService] Request completed endpoint=/health method=GET status=200 responseTimeMs=98

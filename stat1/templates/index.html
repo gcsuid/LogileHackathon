@@ -99,6 +99,8 @@
     .upload label {
       font-size: 14px;
       color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
     }
 
     .upload input[type="file"] {
@@ -154,6 +156,10 @@
       font-size: 14px;
     }
 
+    .source strong {
+      color: var(--ink);
+    }
+
     .dashboard {
       margin-top: 22px;
       display: grid;
@@ -193,6 +199,101 @@
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
       gap: 18px;
+    }
+
+    .upload-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .upload-slot {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.75);
+    }
+
+    .mode-note {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .comparison-banner {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    .comparison-copy {
+      display: grid;
+      gap: 10px;
+    }
+
+    .comparison-copy p {
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .delta-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .delta {
+      padding: 16px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .delta-label {
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .delta-value {
+      font-size: 28px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .trend-up {
+      color: var(--warn);
+    }
+
+    .trend-down {
+      color: var(--ok);
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+    }
+
+    .compare-table th,
+    .compare-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+    }
+
+    .compare-table th {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .summary-list {
+      margin: 0;
+      padding-left: 18px;
     }
 
     .panel {
@@ -257,7 +358,7 @@
     }
 
     @media (max-width: 920px) {
-      .hero, .grid, .stats {
+      .hero, .grid, .stats, .upload-grid, .comparison-banner, .delta-strip {
         grid-template-columns: 1fr;
       }
     }
@@ -272,23 +373,186 @@
         <p class="lede">Drop in an application log and get a concise operational dashboard: error rate, top failing components, common failure reasons, and anomaly signals.</p>
       </div>
 
-      <form class="card upload" method="post" enctype="multipart/form-data">
-        <div>
-          <label for="logfile">Log file</label>
-          <input id="logfile" name="logfile" type="file" accept=".log,.txt">
-        </div>
-        <div class="actions">
-          <button class="primary" type="submit">Analyze File</button>
-          <button class="secondary" type="submit" name="use_sample" value="1">Load Sample</button>
-        </div>
+      <div class="card upload">
+        <form method="post" enctype="multipart/form-data">
+          <div>
+            <label for="logfile">Single-file analysis</label>
+            <input id="logfile" name="logfile" type="file" accept=".log,.txt">
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Analyze File</button>
+            <button class="secondary" type="submit" name="use_sample" value="1">Load Sample</button>
+          </div>
+        </form>
+
+        <div class="mode-note">Comparison mode highlights regressions between a baseline log and a newer candidate log.</div>
+
+        <form method="post" enctype="multipart/form-data">
+          <input type="hidden" name="compare_mode" value="1">
+          <div class="upload-grid">
+            <div class="upload-slot">
+              <label for="baseline_log">Baseline log</label>
+              <input id="baseline_log" name="baseline_log" type="file" accept=".log,.txt">
+            </div>
+            <div class="upload-slot">
+              <label for="candidate_log">Candidate log</label>
+              <input id="candidate_log" name="candidate_log" type="file" accept=".log,.txt">
+            </div>
+          </div>
+          <div class="actions">
+            <button class="primary" type="submit">Compare Files</button>
+            <button class="secondary" type="submit" name="use_comparison_sample" value="1">Load Comparison Sample</button>
+          </div>
+        </form>
+
         {% if source_name %}
-        <div class="source">Current source: {{ source_name }}</div>
+        <div class="source">Current source: <strong>{{ source_name }}</strong></div>
+        {% endif %}
+        {% if comparison_sources %}
+        <div class="source">Baseline: <strong>{{ comparison_sources.baseline }}</strong> | Candidate: <strong>{{ comparison_sources.candidate }}</strong></div>
         {% endif %}
         {% if error_message %}
         <div class="alert">{{ error_message }}</div>
         {% endif %}
-      </form>
+      </div>
     </section>
+
+    {% if comparison %}
+    <section class="dashboard">
+      <article class="card panel comparison-banner">
+        <div class="comparison-copy">
+          <div class="eyebrow">Comparison Mode</div>
+          <h2>What Changed</h2>
+          <p>Baseline and candidate logs are analyzed independently, then compared to surface regressions in errors, latency, and failure reasons.</p>
+          {% if comparison.diff.summary %}
+          <ol class="summary-list">
+            {% for line in comparison.diff.summary %}
+            <li>{{ line }}</li>
+            {% endfor %}
+          </ol>
+          {% endif %}
+        </div>
+        <div class="delta-strip">
+          <div class="delta">
+            <div class="delta-label">Error Rate Delta</div>
+            <div class="delta-value {% if comparison.diff.deltas.error_rate > 0 %}trend-up{% elif comparison.diff.deltas.error_rate < 0 %}trend-down{% endif %}">
+              {{ "%+.2f"|format(comparison.diff.deltas.error_rate) }}%
+            </div>
+            <div class="muted">{{ "%.2f"|format(comparison.diff.baseline.error_rate) }}% to {{ "%.2f"|format(comparison.diff.candidate.error_rate) }}%</div>
+          </div>
+          <div class="delta">
+            <div class="delta-label">Error Count Delta</div>
+            <div class="delta-value {% if comparison.diff.deltas.error_count > 0 %}trend-up{% elif comparison.diff.deltas.error_count < 0 %}trend-down{% endif %}">
+              {{ "%+d"|format(comparison.diff.deltas.error_count) }}
+            </div>
+            <div class="muted">{{ comparison.diff.baseline.error_count }} to {{ comparison.diff.candidate.error_count }} errors</div>
+          </div>
+          <div class="delta">
+            <div class="delta-label">Response P95 Delta</div>
+            <div class="delta-value {% if comparison.diff.deltas.response_time_p95_ms and comparison.diff.deltas.response_time_p95_ms.delta > 0 %}trend-up{% elif comparison.diff.deltas.response_time_p95_ms and comparison.diff.deltas.response_time_p95_ms.delta < 0 %}trend-down{% endif %}">
+              {% if comparison.diff.deltas.response_time_p95_ms %}
+              {{ "%+.0f"|format(comparison.diff.deltas.response_time_p95_ms.delta) }} ms
+              {% else %}
+              N/A
+              {% endif %}
+            </div>
+            <div class="muted">Candidate vs baseline</div>
+          </div>
+          <div class="delta">
+            <div class="delta-label">DB P95 Delta</div>
+            <div class="delta-value {% if comparison.diff.deltas.db_query_p95_ms and comparison.diff.deltas.db_query_p95_ms.delta > 0 %}trend-up{% elif comparison.diff.deltas.db_query_p95_ms and comparison.diff.deltas.db_query_p95_ms.delta < 0 %}trend-down{% endif %}">
+              {% if comparison.diff.deltas.db_query_p95_ms %}
+              {{ "%+.0f"|format(comparison.diff.deltas.db_query_p95_ms.delta) }} ms
+              {% else %}
+              N/A
+              {% endif %}
+            </div>
+            <div class="muted">Candidate vs baseline</div>
+          </div>
+        </div>
+      </article>
+
+      <div class="grid">
+        <article class="card panel">
+          <h2>Regression Snapshot</h2>
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Baseline</th>
+                <th>Candidate</th>
+                <th>Delta</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Total logs</td>
+                <td>{{ comparison.diff.baseline.total_logs }}</td>
+                <td>{{ comparison.diff.candidate.total_logs }}</td>
+                <td>{{ "%+d"|format(comparison.diff.candidate.total_logs - comparison.diff.baseline.total_logs) }}</td>
+              </tr>
+              <tr>
+                <td>Errors</td>
+                <td>{{ comparison.diff.baseline.error_count }}</td>
+                <td>{{ comparison.diff.candidate.error_count }}</td>
+                <td>{{ "%+d"|format(comparison.diff.deltas.error_count) }}</td>
+              </tr>
+              <tr>
+                <td>Slow requests</td>
+                <td>{{ comparison.diff.baseline.slow_requests }}</td>
+                <td>{{ comparison.diff.candidate.slow_requests }}</td>
+                <td>{{ "%+d"|format(comparison.diff.deltas.slow_requests) }}</td>
+              </tr>
+              <tr>
+                <td>High DB latency</td>
+                <td>{{ comparison.diff.baseline.db_latency_events }}</td>
+                <td>{{ comparison.diff.candidate.db_latency_events }}</td>
+                <td>{{ "%+d"|format(comparison.diff.deltas.db_latency_events) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article class="card panel">
+          <h2>New Failure Reasons</h2>
+          {% if comparison.diff.new_failure_reasons %}
+            {% for item in comparison.diff.new_failure_reasons %}
+            <div class="reason">
+              <span>{{ item.reason }}</span>
+              <strong>{{ item.count }}</strong>
+            </div>
+            {% endfor %}
+          {% else %}
+          <p class="muted">No new failure reasons appeared in the candidate log.</p>
+          {% endif %}
+        </article>
+      </div>
+
+      <div class="grid">
+        <article class="card panel">
+          <h2>Worsened Services</h2>
+          {% if comparison.diff.worsened_services %}
+          <ol>
+            {% for item in comparison.diff.worsened_services %}
+            <li><strong>{{ item.service }}</strong> - {{ item.baseline_errors }} to {{ item.candidate_errors }} errors ({{ "%+d"|format(item.delta) }})</li>
+            {% endfor %}
+          </ol>
+          {% else %}
+          <p class="muted">No service shows a higher error count in the candidate log.</p>
+          {% endif %}
+        </article>
+
+        <article class="card panel">
+          <h2>Service Footprint Changes</h2>
+          <ul>
+            <li>Added services: {{ comparison.diff.added_services|join(", ") if comparison.diff.added_services else "None" }}</li>
+            <li>Removed services: {{ comparison.diff.removed_services|join(", ") if comparison.diff.removed_services else "None" }}</li>
+            <li>Removed failure reasons: {{ comparison.diff.removed_failure_reasons|map(attribute='reason')|join(", ") if comparison.diff.removed_failure_reasons else "None" }}</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+    {% endif %}
 
     {% if analysis %}
     <section class="dashboard">
