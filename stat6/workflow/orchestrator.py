@@ -3,8 +3,11 @@ from agents.finance_agent import review_financials
 from agents.store_agent import assess_store_readiness
 from agents.validation_agent import validate_recipe
 from data.dummy_data import (
+    EQUIPMENT_CATALOG,
+    EQUIPMENT_SUBSTITUTIONS,
     INGREDIENT_PRICES,
     MAX_BATCH_COST_ALLOWED,
+    STORE_EQUIPMENT_INVENTORY,
     STORE_EQUIPMENT,
     TARGET_SELLING_PRICE,
 )
@@ -60,7 +63,13 @@ def run_pipeline(recipe: dict) -> dict:
             finance_output = retry_finance_output
             retry_used = True
 
-    store_output = assess_store_readiness(recipe, STORE_EQUIPMENT)
+    store_output = assess_store_readiness(
+        recipe,
+        STORE_EQUIPMENT,
+        EQUIPMENT_CATALOG,
+        EQUIPMENT_SUBSTITUTIONS,
+        STORE_EQUIPMENT_INVENTORY,
+    )
 
     result["cost"] = cost_output
     result["finance"] = finance_output

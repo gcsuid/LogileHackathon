@@ -86,7 +86,7 @@ The sample data in `data/dummy_data.py` includes:
 Each agent calls `run_llm()` from `llm.py`, which uses:
 
 ```python
-Ollama(model="llama3")
+Ollama(model="qwen2.5:0.5b  ")
 ```
 
 The code also includes a fast fallback path. If Ollama is not running or is too slow to respond, the system still completes using deterministic local logic and returns a fallback summary string instead of failing.
@@ -99,7 +99,7 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Make sure Ollama is installed locally and that the `llama3` model is available.
+Make sure Ollama is installed locally and that the `qwen2.5:0.5b  ` model is available.
 
 Example:
 

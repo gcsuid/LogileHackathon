@@ -29,6 +29,15 @@ def print_report(report: dict) -> None:
             f"Store Readiness: {store['readiness_score']}% "
             f"(missing: {', '.join(store['missing_equipment']) or 'none'})"
         )
+        substitutions = store.get("substitutions", [])
+        if substitutions:
+            print(
+                "Substitutions: "
+                + ", ".join(
+                    f"{item['required_equipment']} -> {item['substitute_equipment']}"
+                    for item in substitutions
+                )
+            )
 
     print(f"Final Decision: {report['final_decision']}")
     print("\n=== STRUCTURED OUTPUT ===")
