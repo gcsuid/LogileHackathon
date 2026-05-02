@@ -1,4 +1,4 @@
-# Next-Step Features for the Log Analysis Hackathon Project
+let's # Next-Step Features for the Log Analysis Hackathon Project
 
 This document scopes the four highest-impact upgrades for the current project and explains what is needed to build each one from the current codebase.
 
