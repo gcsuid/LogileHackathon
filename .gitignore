@@ -1,1 +1,5 @@
 try.py
+.env
+stat6/.env
+__pycache__/
+*.pyc

@@ -1,140 +1,202 @@
-# Retail Recipe Approval System
+# CLI Recipe Validation MVP
 
-This project simulates an agentic workflow for approving a retail recipe using multiple Python agents and a local Ollama-backed LLM.
+This project is a command-line MVP for validating retail recipes with three lightweight agents. It uses the Hugging Face hosted inference API only. There are no local models, no database, and no web server; all data is kept in Python dictionaries while the CLI process runs.
 
-The workflow covers:
-- recipe validation
-- cost analysis
-- finance approval
-- store readiness assessment
-- final decisioning through a central orchestrator
+## What It Solves
 
-## Tech Stack
+Recipe approval usually needs several checks before a recipe can be sent to production:
 
-- Python
-- `langchain_community.llms.Ollama`
-- Local Ollama model: `llama3`
-- No external APIs
+- is the recipe complete?
+- is the recipe cost acceptable for the target margin?
+- does the store have the required equipment?
 
-## Project Structure
+This CLI picks a recipe dataset, runs the three validation agents, and prints one structured JSON output.
+
+## Implemented Agents
+
+### Agent 1 - Completeness Check
+
+Validates that a recipe has:
+
+- `name`
+- `ingredients`
+- `batch_size`
+- `equipment`
+
+Return shape:
+
+```json
+{
+  "valid": true,
+  "missing": [],
+  "issues": []
+}
+```
+
+### Agent 2 - Cost & Margin Check
+
+Calculates total cost from the ingredient list using a simple sum.
+
+Supported ingredient cost formats:
+
+- `{ "name": "flour", "cost": 20 }`
+- `{ "name": "flour", "total_cost": 20 }`
+- `{ "name": "flour", "quantity": 2, "unit_cost": 10 }`
+- `{ "name": "flour", "quantity": 2, "price": 10 }`
+
+The agent compares total cost against the target margin, then asks Hugging Face:
 
 ```text
-stat6/
-├── main.py
-├── llm.py
-├── requirements.txt
-├── readme.md
-├── agents/
-│   ├── __init__.py
-│   ├── validation_agent.py
-│   ├── cost_agent.py
-│   ├── finance_agent.py
-│   └── store_agent.py
-├── data/
-│   ├── __init__.py
-│   └── dummy_data.py
-└── workflow/
-    ├── __init__.py
-    └── orchestrator.py
+Given total_cost=$X and target_margin=Y%, predict approval probability and suggest 2 alternatives
 ```
 
-## How It Works
+### Agent 3 - Equipment Check
 
-### 1. Validation Agent
-Checks whether the recipe has:
-- required fields
-- valid ingredient quantities
-- basic structural consistency
-
-### 2. Cost Agent
-Calculates:
-- total batch cost
-- cost per unit
-- basic cost reduction suggestions
-
-### 3. Finance Agent
-Reviews:
-- whether the recipe stays within the allowed batch cost
-- expected margin impact
-- approval or rejection
-
-### 4. Store Readiness Agent
-Checks whether the target store has the required equipment and returns a readiness score.
-
-### 5. Orchestrator
-Runs the agents in sequence:
-1. Validation
-2. Costing
-3. Finance
-4. Store readiness
-
-It then combines the outputs into one final decision:
-- `READY`
-- `NEEDS CHANGES`
-- `REJECTED`
-
-## Dummy Data
-
-The sample data in `data/dummy_data.py` includes:
-- one sample recipe
-- mock ingredient prices
-- mock store equipment availability
-- finance thresholds
-
-## LLM Behavior
-
-Each agent calls `run_llm()` from `llm.py`, which uses:
+Checks recipe equipment against this hardcoded store equipment dictionary:
 
 ```python
-Ollama(model="qwen2.5:0.5b  ")
+STORE_EQUIPMENT = {"mixer": 1, "oven": 2, "cooling_rack": 0}
 ```
 
-The code also includes a fast fallback path. If Ollama is not running or is too slow to respond, the system still completes using deterministic local logic and returns a fallback summary string instead of failing.
+The agent asks Hugging Face:
 
-## Setup
+```text
+Recipe needs {equipment}. Store has {available}. Is it feasible? Suggest workarounds if missing
+```
 
-Install dependencies:
+## In-Memory Storage
+
+The CLI keeps data in these module-level dictionaries in `main.py`:
+
+```python
+recipes = {}
+production_runs = {}
+users = {}
+```
+
+There is no equipment table. Equipment is intentionally hardcoded as `STORE_EQUIPMENT`.
+
+## Sample Dataset
+
+The project includes 10 sample recipes in `sample_data.py`. They cover different outcomes:
+
+- valid recipes that can be approved
+- recipes that fail equipment readiness because `cooling_rack` is unavailable
+- recipes that need cost review
+- a recipe with missing required data
+
+By default, the CLI picks one sample recipe randomly and prints the validation output.
+
+## Hugging Face Setup
+
+The Hugging Face call is implemented in `llm.py` with this endpoint format:
+
+```text
+https://api-inference.huggingface.co/models/{model_id}
+```
+
+Default model:
+
+```text
+mistralai/Mistral-7B-Instruct-v0.3
+```
+
+Create a `.env` file in this directory:
+
+```env
+HF_TOKEN=your_huggingface_token_here
+HF_MODEL=mistralai/Mistral-7B-Instruct-v0.3
+HF_TIMEOUT_SECONDS=20
+```
+
+If `HF_TOKEN` is missing, the CLI still runs with deterministic fallback values for probability, alternatives, and workarounds.
+
+## Install
+
+From the `stat6` directory:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Make sure Ollama is installed locally and that the `qwen2.5:0.5b  ` model is available.
+## Run The CLI
 
-Example:
-
-```bash
-ollama pull llama3
-ollama serve
-```
-
-## Run
+Pick one sample recipe randomly and show output:
 
 ```bash
 python main.py
 ```
 
-## Example Output
+List all 10 sample datasets:
 
-```text
-=== FINAL REPORT ===
-Recipe: Spicy Paneer Wrap
-Validation: PASS
-Cost: INR 666.20 per batch
-Cost Per Unit: INR 66.62
-Finance: REJECTED (margin too low)
-Store Readiness: 80% (missing: grill)
-Final Decision: REJECTED
+```bash
+python main.py --list
 ```
 
-## Bonus Logic
+Run a specific sample by 1-based index:
 
-If finance rejects the recipe, the orchestrator attempts one simple retry by slightly reducing premium ingredient quantities and re-running cost and finance checks.
+```bash
+python main.py --index 2
+```
 
-## Notes
+## Example Output
 
-- The project uses functions instead of classes to keep the implementation simple.
-- All data is mocked locally.
-- No external services are used.
-- The current dummy recipe is intentionally configured to demonstrate a rejection path in finance and a missing equipment path in store readiness.
+```json
+{
+  "recipe_id": "generated-id",
+  "status": "approved",
+  "agents": {
+    "completeness": {
+      "valid": true,
+      "missing": [],
+      "issues": []
+    },
+    "cost_margin": {
+      "approved": true,
+      "probability": 85,
+      "total_cost": 132.5,
+      "alternatives": [
+        "Reduce high-cost ingredient quantities.",
+        "Increase target price or negotiate supplier pricing."
+      ]
+    },
+    "equipment": {
+      "ready": true,
+      "missing": [],
+      "workarounds": []
+    }
+  },
+  "recipe": {
+    "name": "Vanilla Muffin",
+    "ingredients": [
+      { "name": "flour", "quantity": 1.5, "unit_cost": 25 },
+      { "name": "vanilla", "cost": 35 },
+      { "name": "butter", "quantity": 1, "unit_cost": 60 }
+    ],
+    "batch_size": 12,
+    "equipment": ["mixer", "oven"],
+    "target_margin": 30,
+    "target_price": 240,
+    "status": "approved",
+    "total_cost": 132.5
+  },
+  "sample_dataset_count": 10
+}
+```
 
+## Current Files
+
+```text
+stat6/
+|-- main.py
+|-- llm.py
+|-- sample_data.py
+|-- requirements.txt
+|-- readme.md
+|-- agents/
+|-- data/
+|-- workflow/
+`-- reporting.py
+```
+
+The CLI entry point is `main.py`.
