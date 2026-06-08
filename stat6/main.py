@@ -11,8 +11,6 @@ from sample_data import SAMPLE_RECIPES
 
 
 recipes: dict[str, dict[str, Any]] = {}
-production_runs: dict[str, dict[str, Any]] = {}
-users: dict[str, dict[str, Any]] = {}
 
 STORE_EQUIPMENT = {"mixer": 1, "oven": 2, "cooling_rack": 0}
 DEFAULT_TARGET_MARGIN = 30.0

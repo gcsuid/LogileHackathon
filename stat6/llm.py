@@ -19,10 +19,6 @@ HF_MODEL = os.getenv("HF_MODEL", "mistralai/Mistral-7B-Instruct-v0.3").strip()
 HF_TIMEOUT_SECONDS = float(os.getenv("HF_TIMEOUT_SECONDS", "20"))
 
 
-def _fallback_summary(reason: str) -> str:
-    return ""
-
-
 def _sanitize_prompt(prompt: str) -> str:
     prompt = str(prompt).strip() or "No prompt content was provided."
     redacted = prompt.replace(HF_TOKEN, "[REDACTED]") if HF_TOKEN else prompt
@@ -87,8 +83,3 @@ def call_hf_inference(prompt: str, max_new_tokens: int = 220) -> str:
     if isinstance(data, dict):
         return _sanitize_response(data.get("generated_text", ""))
     return ""
-
-
-def run_llm(prompt: str) -> str:
-    """Compatibility wrapper used by the existing console agents."""
-    return call_hf_inference(prompt)

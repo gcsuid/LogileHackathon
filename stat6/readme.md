@@ -66,12 +66,10 @@ Recipe needs {equipment}. Store has {available}. Is it feasible? Suggest workaro
 
 ## In-Memory Storage
 
-The CLI keeps data in these module-level dictionaries in `main.py`:
+The CLI keeps validated recipes in a module-level dictionary in `main.py`:
 
 ```python
 recipes = {}
-production_runs = {}
-users = {}
 ```
 
 There is no equipment table. Equipment is intentionally hardcoded as `STORE_EQUIPMENT`.
@@ -193,10 +191,7 @@ stat6/
 |-- sample_data.py
 |-- requirements.txt
 |-- readme.md
-|-- agents/
-|-- data/
-|-- workflow/
-`-- reporting.py
+`-- solutionfor6_ayushdas.pptx
 ```
 
 The CLI entry point is `main.py`.
