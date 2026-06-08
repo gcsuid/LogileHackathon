@@ -93,15 +93,12 @@ def cost_margin_agent(recipe: dict[str, Any], target_margin: float) -> dict[str,
     max_cost_for_margin = target_price * (1 - target_margin / 100)
     approved = total_cost <= max_cost_for_margin
 
+    # 1. Removed probability from the AI prompt
     prompt = f"""
-Given total_cost=${total_cost} and target_margin={target_margin}%, predict approval probability and suggest 2 alternatives.
-Return JSON only with keys: probability, alternatives.
+Given total_cost=${total_cost} and target_margin={target_margin}%, suggest 2 alternatives to lower costs or raise margins.
+Return JSON only with keys: alternatives.
 """
     hf_result = _extract_json(call_hf_inference(prompt))
-
-    probability = hf_result.get("probability")
-    if not isinstance(probability, int | float):
-        probability = 85 if approved else 35
 
     alternatives = hf_result.get("alternatives")
     if not isinstance(alternatives, list):
@@ -110,13 +107,12 @@ Return JSON only with keys: probability, alternatives.
             "Increase target price or negotiate supplier pricing.",
         ]
 
+    # 2. Removed probability from the returned dictionary
     return {
         "approved": approved,
-        "probability": max(0, min(100, int(probability))),
         "total_cost": total_cost,
         "alternatives": alternatives[:2],
     }
-
 
 def equipment_agent(recipe: dict[str, Any]) -> dict[str, Any]:
     required = recipe.get("equipment", [])
