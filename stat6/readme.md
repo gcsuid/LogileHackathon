@@ -85,38 +85,6 @@ The project includes 10 sample recipes in `sample_data.py`. They cover different
 
 By default, the CLI picks one sample recipe randomly and prints the validation output.
 
-## Hugging Face Setup
-
-The Hugging Face call is implemented in `llm.py` with this endpoint format:
-
-```text
-https://api-inference.huggingface.co/models/{model_id}
-```
-
-Default model:
-
-```text
-mistralai/Mistral-7B-Instruct-v0.3
-```
-
-Create a `.env` file in this directory:
-
-```env
-HF_TOKEN=your_huggingface_token_here
-HF_MODEL=mistralai/Mistral-7B-Instruct-v0.3
-HF_TIMEOUT_SECONDS=20
-```
-
-If `HF_TOKEN` is missing, the CLI still runs with deterministic fallback values for probability, alternatives, and workarounds.
-
-## Install
-
-From the `stat6` directory:
-
-```bash
-pip install -r requirements.txt
-```
-
 ## Run The CLI
 
 Pick one sample recipe randomly and show output:
