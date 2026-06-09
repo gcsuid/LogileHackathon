@@ -1,5 +1,4 @@
 import argparse
-import copy
 import json
 import random
 import re
@@ -9,8 +8,6 @@ from typing import Any
 from llm import call_hf_inference
 from sample_data import SAMPLE_RECIPES
 
-
-recipes: dict[str, dict[str, Any]] = {}
 
 STORE_EQUIPMENT = {"mixer": 1, "oven": 2, "cooling_rack": 0}
 DEFAULT_TARGET_MARGIN = 30.0
@@ -50,6 +47,7 @@ def _ingredient_cost(ingredient: dict[str, Any]) -> float:
 
 
 def completeness_agent(recipe: dict[str, Any]) -> dict[str, Any]:
+    """Validate recipe completeness using deterministic local checks only."""
     required_fields = ["name", "ingredients", "batch_size", "equipment"]
     missing = [field for field in required_fields if not recipe.get(field)]
     issues = []
@@ -61,30 +59,19 @@ def completeness_agent(recipe: dict[str, Any]) -> dict[str, Any]:
     if recipe.get("batch_size") is not None and recipe["batch_size"] <= 0:
         issues.append("batch_size must be greater than zero")
 
-    prompt = f"""
-Validate recipe has name, ingredients, batch_size, equipment.
-Return JSON only with keys: valid, missing, issues.
-
-Recipe:
-{json.dumps(recipe)}
-
-Detected missing fields:
-{json.dumps(missing)}
-
-Detected issues:
-{json.dumps(issues)}
-"""
-    hf_result = _extract_json(call_hf_inference(prompt))
-    hf_missing = hf_result.get("missing")
-    hf_issues = hf_result.get("issues")
-    returned_missing = list(dict.fromkeys(missing + (hf_missing if isinstance(hf_missing, list) else [])))
-    returned_issues = list(dict.fromkeys(issues + (hf_issues if isinstance(hf_issues, list) else [])))
-
     return {
-        "valid": not returned_missing and not returned_issues and bool(hf_result.get("valid", True)),
-        "missing": returned_missing,
-        "issues": returned_issues,
+        "valid": not missing and not issues,
+        "missing": missing,
+        "issues": issues,
     }
+
+
+def _merge_with_deduplication(local_list: list[str], hf_result: dict[str, Any], key: str) -> list[str]:
+    """Merge local validation results with HF results, removing duplicates."""
+    hf_values = hf_result.get(key)
+    if not isinstance(hf_values, list):
+        hf_values = []
+    return list(dict.fromkeys(local_list + hf_values))
 
 
 def cost_margin_agent(recipe: dict[str, Any], target_margin: float) -> dict[str, Any]:
@@ -123,8 +110,7 @@ Recipe needs {required}. Store has {STORE_EQUIPMENT}. Is it feasible? Suggest wo
 Return JSON only with keys: ready, missing, workarounds.
 """
     hf_result = _extract_json(call_hf_inference(prompt))
-    hf_missing = hf_result.get("missing")
-    returned_missing = list(dict.fromkeys(missing + (hf_missing if isinstance(hf_missing, list) else [])))
+    returned_missing = _merge_with_deduplication(missing, hf_result, "missing")
 
     workarounds = hf_result.get("workarounds")
     if not isinstance(workarounds, list):
@@ -164,7 +150,6 @@ def run_recipe_validation(recipe: dict[str, Any]) -> dict[str, Any]:
         "status": status,
         "total_cost": cost["total_cost"],
     }
-    recipes[recipe_id] = stored_recipe
 
     return {
         "recipe_id": recipe_id,
@@ -175,18 +160,17 @@ def run_recipe_validation(recipe: dict[str, Any]) -> dict[str, Any]:
             "equipment": equipment,
         },
         "recipe": stored_recipe,
-        "sample_dataset_count": len(SAMPLE_RECIPES),
     }
 
 
 def pick_sample(index: int | None = None) -> dict[str, Any]:
     if index is None:
-        return copy.deepcopy(random.choice(SAMPLE_RECIPES))
+        return random.choice(SAMPLE_RECIPES).copy()
 
     if index < 1 or index > len(SAMPLE_RECIPES):
         raise ValueError(f"Sample index must be between 1 and {len(SAMPLE_RECIPES)}.")
 
-    return copy.deepcopy(SAMPLE_RECIPES[index - 1])
+    return SAMPLE_RECIPES[index - 1].copy()
 
 
 def list_samples() -> None:
